@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UserTodo — Dashboard</title>
+  <meta name="description" content="Manage your tasks efficiently with UserTodo dashboard." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="app-layout">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <div class="logo-icon" style="width:34px;height:34px;font-size:1rem;">✓</div>
+        UserTodo
+      </div>
+      <div class="header-user">
+        <div class="user-badge" id="header-username">👤 Loading…</div>
+        <button class="btn-logout" id="logout-btn" onclick="logout()">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div>
+        <div class="sidebar-section-title">Overview</div>
+        <div class="stats-grid">
+          <div class="stat-card stat-total">
+            <div class="stat-number" id="stat-total">0</div>
+            <div class="stat-label">Total</div>
+          </div>
+          <div class="stat-card stat-active">
+            <div class="stat-number" id="stat-active">0</div>
+            <div class="stat-label">Active</div>
+          </div>
+          <div class="stat-card stat-done">
+            <div class="stat-number" id="stat-done">0</div>
+            <div class="stat-label">Done</div>
+          </div>
+          <div class="stat-card stat-high">
+            <div class="stat-number" id="stat-high">0</div>
+            <div class="stat-label">High Priority</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">Filter</div>
+        <div class="filter-buttons">
+          <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">
+            <span class="filter-icon">📋</span> All Tasks
+            <span class="filter-count" id="count-all">0</span>
+          </button>
+          <button class="filter-btn" id="filter-active" onclick="setFilter('active')">
+            <span class="filter-icon">⚡</span> Active
+            <span class="filter-count" id="count-active">0</span>
+          </button>
+          <button class="filter-btn" id="filter-completed" onclick="setFilter('completed')">
+            <span class="filter-icon">✅</span> Completed
+            <span class="filter-count" id="count-completed">0</span>
+          </button>
+          <button class="filter-btn" id="filter-high" onclick="setFilter('high')">
+            <span class="filter-icon">🔴</span> High Priority
+            <span class="filter-count" id="count-high">0</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="app-main">
+      <div class="main-toolbar">
+        <input
+          type="search"
+          class="search-input"
+          id="search-input"
+          placeholder="🔍  Search tasks…"
+          oninput="renderTasks()"
+        />
+        <button class="btn-add-task" id="add-task-btn" onclick="openModal()">
+          ＋ New Task
+        </button>
+      </div>
+
+      <div class="task-list" id="task-list">
+        <!-- Tasks rendered here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay hidden" id="modal-overlay" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">New Task</div>
+        <button class="btn-modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <form class="modal-form" id="task-form" onsubmit="handleSaveTask(event)">
+        <div class="form-group">
+          <label for="task-title">Title <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="task-title" placeholder="What needs to be done?" required />
+        </div>
+        <div class="form-group">
+          <label for="task-description">Description</label>
+          <textarea id="task-description" rows="3" placeholder="Optional details…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-priority">Priority</label>
+            <select id="task-priority">
+              <option value="high">🔴 High</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="task-due">Due Date</label>
+            <input type="date" id="task-due" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-primary" id="save-btn" style="padding:10px 24px;">
+            <span class="btn-text">Save Task</span>
+            <span class="btn-spinner hidden">⟳</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UserTodo — Sign In</title>
+  <meta name="description" content="Sign in or create an account to manage your tasks with UserTodo." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="auth-body">
+  <!-- Animated background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <div class="auth-container">
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="logo-icon">✓</div>
+      <h1 class="logo-text">UserTodo</h1>
+    </div>
+    <p class="auth-tagline">Stay organized. Stay productive.</p>
+
+    <!-- Tab switcher -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- Login Form -->
+    <form class="auth-form" id="form-login" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="login-username">Username</label>
+        <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" required />
+      </div>
+      <div class="form-error" id="login-error"></div>
+      <button type="submit" class="btn-primary" id="login-btn">
+        <span class="btn-text">Sign In</span>
+        <span class="btn-spinner hidden">⟳</span>
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form class="auth-form hidden" id="form-register" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label for="reg-username">Username</label>
+        <input type="text" id="reg-username" placeholder="Choose a username" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Password</label>
+        <input type="password" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password" required />
+      </div>
+      <div class="form-group">
+        <label for="reg-confirm">Confirm Password</label>
+        <input type="password" id="reg-confirm" placeholder="Repeat your password" autocomplete="new-password" required />
+      </div>
+      <div class="form-error" id="register-error"></div>
+      <button type="submit" class="btn-primary" id="register-btn">
+        <span class="btn-text">Create Account</span>
+        <span class="btn-spinner hidden">⟳</span>
+      </button>
+    </form>
+  </div>
+
+  <script src="/js/auth.js"></script>
+</body>
+</html>
