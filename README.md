@@ -27,7 +27,7 @@ Built entirely with JavaScript - Node.js and Express on the backend, vanilla Jav
 ### Backend
 - **Node.js** - JavaScript runtime
 - **Express.js** - Web framework
-- **SQLite** - Database with better-sqlite3 driver
+- **Vercel Postgres** - PostgreSQL database with @vercel/postgres
 - **JWT** - Authentication tokens
 - **bcryptjs** - Password hashing
 - **cors** - Cross-origin requests
@@ -40,8 +40,8 @@ Built entirely with JavaScript - Node.js and Express on the backend, vanilla Jav
 - **Google Fonts** - Inter typography
 
 ### Database
-- **SQLite** - File-based relational database
-- **WAL mode** - Enhanced performance
+- **PostgreSQL** - Relational database via Vercel Postgres
+- **Serverless-compatible** - Designed for Vercel deployment
 
 ## Installation
 
@@ -60,6 +60,7 @@ npm install
 ```env
 PORT=3000
 JWT_SECRET=your-secret-key-here
+POSTGRES_URL=your-postgres-connection-string
 ```
 
 4. Start the application
@@ -68,6 +69,21 @@ npm start
 ```
 
 5. Open your browser and navigate to `http://localhost:3000`
+
+## Vercel Deployment
+
+1. **Create Vercel Postgres Database:**
+   - Go to Vercel dashboard → Storage → Create Database
+   - Choose Postgres (Neon integration)
+
+2. **Deploy to Vercel:**
+   ```bash
+   npx vercel --prod
+   ```
+
+3. **Set Environment Variables:**
+   - `JWT_SECRET` - Your secret JWT key
+   - `POSTGRES_URL` - Auto-added by Vercel Postgres
 
 ## API Endpoints
 
@@ -86,21 +102,22 @@ npm start
 ```
 userTodo-2/
 ├── app.js              # Main server file
-├── db.js               # Database setup
-├── middleware/         # Express middleware
-│   └── auth.js         # JWT authentication
-├── routes/             # API routes
-│   ├── auth.js         # Authentication endpoints
-│   └── tasks.js        # Task endpoints
-├── public/             # Frontend files
-│   ├── index.html      # Login page
-│   ├── app.html        # Main dashboard
+├── db-postgres.js       # PostgreSQL database setup
+├── vercel.json          # Vercel deployment config
+├── middleware/          # Express middleware
+│   └── auth.js          # JWT authentication
+├── routes/              # API routes
+│   ├── auth.js          # Authentication endpoints
+│   └── tasks.js         # Task endpoints
+├── public/              # Frontend files
+│   ├── index.html       # Login page
+│   ├── app.html         # Main dashboard
 │   ├── css/
-│   │   └── styles.css  # Styles
+│   │   └── styles.css   # Styles
 │   └── js/
-│       ├── auth.js     # Authentication logic
-│       └── app.js      # Dashboard logic
-└── package.json        # Dependencies
+│       ├── auth.js      # Authentication logic
+│       └── app.js       # Dashboard logic
+└── package.json         # Dependencies
 ```
 
 ## Contributing
