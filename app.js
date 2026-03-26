@@ -2,9 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { initDatabase } = require('./db-postgres');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize database
+initDatabase();
 
 // Middleware
 app.use(cors());

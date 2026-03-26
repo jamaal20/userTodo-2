@@ -1,64 +1,77 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const { getTasksByUserId, createTask, updateTask, deleteTask } = require('../db-postgres');
 const auth = require('../middleware/auth');
 
 // All routes require auth
 router.use(auth);
 
 // GET /api/tasks — fetch all tasks for the logged-in user
-router.get('/', (req, res) => {
-  const tasks = db.prepare(
-    'SELECT * FROM tasks WHERE user_id = ? ORDER BY created_at DESC'
-  ).all(req.user.id);
-  res.json(tasks);
+router.get('/', async (req, res) => {
+  try {
+    const tasks = await getTasksByUserId(req.user.id);
+    res.json(tasks);
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // POST /api/tasks — create a new task
-router.post('/', (req, res) => {
-  const { title, description = '', priority = 'medium', due_date = null } = req.body;
-  if (!title || !title.trim()) {
-    return res.status(400).json({ error: 'Title is required' });
+router.post('/', async (req, res) => {
+  try {
+    const { title, description = '', priority = 'medium', due_date = null } = req.body;
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
+
+    const task = await createTask(
+      req.user.id,
+      title.trim(),
+      description.trim(),
+      priority,
+      due_date
+    );
+    res.status(201).json(task);
+  } catch (error) {
+    console.error('Create task error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  const result = db.prepare(
-    'INSERT INTO tasks (user_id, title, description, priority, due_date) VALUES (?, ?, ?, ?, ?)'
-  ).run(req.user.id, title.trim(), description.trim(), priority, due_date);
-
-  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
-  res.status(201).json(task);
 });
 
 // PUT /api/tasks/:id — update a task
-router.put('/:id', (req, res) => {
-  const { id } = req.params;
-  const task = db.prepare('SELECT * FROM tasks WHERE id = ? AND user_id = ?').get(id, req.user.id);
-  if (!task) return res.status(404).json({ error: 'Task not found' });
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
 
-  const {
-    title = task.title,
-    description = task.description,
-    completed = task.completed,
-    priority = task.priority,
-    due_date = task.due_date
-  } = req.body;
+    const updatedTask = await updateTask(parseInt(id), req.user.id, updates);
+    if (!updatedTask) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
 
-  db.prepare(
-    'UPDATE tasks SET title = ?, description = ?, completed = ?, priority = ?, due_date = ? WHERE id = ?'
-  ).run(title, description, completed ? 1 : 0, priority, due_date, id);
-
-  const updated = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
-  res.json(updated);
+    res.json(updatedTask);
+  } catch (error) {
+    console.error('Update task error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // DELETE /api/tasks/:id — delete a task
-router.delete('/:id', (req, res) => {
-  const { id } = req.params;
-  const task = db.prepare('SELECT id FROM tasks WHERE id = ? AND user_id = ?').get(id, req.user.id);
-  if (!task) return res.status(404).json({ error: 'Task not found' });
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedTask = await deleteTask(parseInt(id), req.user.id);
+    
+    if (!deletedTask) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
 
-  db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
-  res.json({ success: true });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete task error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;
