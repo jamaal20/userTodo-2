@@ -1,6 +1,7 @@
-// Debug version to isolate the issue
+// Debug version with proper JWT responses
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -25,7 +26,7 @@ app.post('/api/test', (req, res) => {
   });
 });
 
-// Basic auth test without database
+// Basic auth test with proper JWT response
 app.post('/api/auth/login', (req, res) => {
   try {
     console.log('Login attempt:', req.body);
@@ -35,11 +36,17 @@ app.post('/api/auth/login', (req, res) => {
       return res.status(400).json({ error: 'Credentials required' });
     }
     
-    // Mock successful response for testing
+    // Create a mock JWT token (in real app, verify against database)
+    const token = jwt.sign(
+      { id: 1, username: username }, // Mock user ID
+      process.env.JWT_SECRET || 'fallback_secret',
+      { expiresIn: '7d' }
+    );
+    
+    // Return the exact format the frontend expects
     res.json({ 
-      message: 'Login endpoint working',
-      username,
-      timestamp: new Date().toISOString()
+      token: token,
+      username: username
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -60,16 +67,37 @@ app.post('/api/auth/register', (req, res) => {
       return res.status(400).json({ error: 'Password too short' });
     }
     
-    // Mock successful response for testing
+    // Create a mock JWT token
+    const token = jwt.sign(
+      { id: 1, username: username }, // Mock user ID
+      process.env.JWT_SECRET || 'fallback_secret',
+      { expiresIn: '7d' }
+    );
+    
+    // Return the exact format the frontend expects
     res.status(201).json({ 
-      message: 'Register endpoint working',
-      username,
-      timestamp: new Date().toISOString()
+      token: token,
+      username: username
     });
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ error: 'Register error', details: error.message });
   }
+});
+
+// Mock tasks endpoint
+app.get('/api/tasks', (req, res) => {
+  // This would normally require auth middleware
+  res.json([
+    {
+      id: 1,
+      title: 'Sample Task',
+      description: 'This is a sample task',
+      completed: false,
+      priority: 'medium',
+      created_at: new Date().toISOString()
+    }
+  ]);
 });
 
 module.exports = app;
