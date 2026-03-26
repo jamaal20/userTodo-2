@@ -9,6 +9,14 @@
       "destination": "/index-safe.html"
     },
     {
+      "source": "/app",
+      "destination": "/app-safe.html"
+    },
+    {
+      "source": "/app.html",
+      "destination": "/app-safe.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/public/$1"
     }

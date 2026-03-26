@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UserTodo — Dashboard</title>
+  <meta name="description" content="Manage your tasks with UserTodo">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self'; connect-src 'self';">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .task-list {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .task-item {
+      background: #0f3460;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .task-title {
+      font-weight: 500;
+    }
+    .task-priority {
+      background: #4a90e2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .btn {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #357abd;
+    }
+    .btn-danger {
+      background: #ff6b6b;
+    }
+    .btn-danger:hover {
+      background: #ff5252;
+    }
+    .add-task {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #444;
+      border-radius: 6px;
+      background: #0f3460;
+      color: #fff;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .error {
+      color: #ff6b6b;
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(255,107,107,0.1);
+      border-radius: 6px;
+    }
+    .success {
+      color: #51cf66;
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(81,207,102,0.1);
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>UserTodo</h1>
+      <div>
+        <span id="username">User</span>
+        <button class="btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="add-task">
+      <h3>Add New Task</h3>
+      <input type="text" id="taskTitle" placeholder="Task title">
+      <input type="text" id="taskDescription" placeholder="Description (optional)">
+      <button class="btn" onclick="addTask()">Add Task</button>
+      <div id="message"></div>
+    </div>
+
+    <div class="task-list">
+      <h3>Your Tasks</h3>
+      <div id="taskContainer">
+        <p>Loading tasks...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    
+    if (!token) {
+      window.location.href = '/';
+    }
+    
+    // Display username
+    document.getElementById('username').textContent = username || 'User';
+    
+    // Load tasks
+    async function loadTasks() {
+      try {
+        const response = await fetch('/api/tasks', {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        
+        if (response.ok) {
+          const tasks = await response.json();
+          displayTasks(tasks);
+        } else {
+          document.getElementById('taskContainer').innerHTML = '<div class="error">Failed to load tasks</div>';
+        }
+      } catch (error) {
+        document.getElementById('taskContainer').innerHTML = '<div class="error">Connection error</div>';
+      }
+    }
+    
+    function displayTasks(tasks) {
+      const container = document.getElementById('taskContainer');
+      
+      if (tasks.length === 0) {
+        container.innerHTML = '<p>No tasks yet. Add your first task above!</p>';
+        return;
+      }
+      
+      container.innerHTML = tasks.map(task => `
+        <div class="task-item">
+          <div>
+            <div class="task-title">${task.title}</div>
+            ${task.description ? `<div style="font-size: 14px; opacity: 0.8;">${task.description}</div>` : ''}
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <span class="task-priority">${task.priority || 'medium'}</span>
+            <button class="btn btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    async function addTask() {
+      const title = document.getElementById('taskTitle').value.trim();
+      const description = document.getElementById('taskDescription').value.trim();
+      const messageDiv = document.getElementById('message');
+      
+      if (!title) {
+        messageDiv.innerHTML = '<div class="error">Please enter a task title</div>';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ title, description })
+        });
+        
+        if (response.ok) {
+          messageDiv.innerHTML = '<div class="success">Task added!</div>';
+          document.getElementById('taskTitle').value = '';
+          document.getElementById('taskDescription').value = '';
+          loadTasks();
+        } else {
+          const error = await response.json();
+          messageDiv.innerHTML = '<div class="error">' + (error.error || 'Failed to add task') + '</div>';
+        }
+      } catch (error) {
+        messageDiv.innerHTML = '<div class="error">Connection error</div>';
+      }
+    }
+    
+    async function deleteTask(id) {
+      if (!confirm('Delete this task?')) return;
+      
+      try {
+        const response = await fetch(`/api/tasks/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        
+        if (response.ok) {
+          loadTasks();
+        } else {
+          alert('Failed to delete task');
+        }
+      } catch (error) {
+        alert('Connection error');
+      }
+    }
+    
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      window.location.href = '/';
+    }
+    
+    // Load tasks when page loads
+    loadTasks();
+  </script>
+</body>
+</html>
