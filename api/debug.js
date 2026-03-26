@@ -1,11 +1,23 @@
-// Debug version with proper JWT responses
+// Debug version with proper JWT responses and security headers
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 
 const app = express();
 
-app.use(cors());
+// Security headers to prevent Chrome warnings
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(express.json());
 
 // Simple test endpoints
@@ -14,15 +26,6 @@ app.get('/api/health', (req, res) => {
     status: 'healthy', 
     timestamp: new Date().toISOString(),
     env: process.env.NODE_ENV || 'development'
-  });
-});
-
-app.post('/api/test', (req, res) => {
-  console.log('Request body:', req.body);
-  res.json({ 
-    message: 'Test endpoint working',
-    received: req.body,
-    timestamp: new Date().toISOString()
   });
 });
 
