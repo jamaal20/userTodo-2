@@ -5,6 +5,10 @@
       "destination": "/api/debug.js"
     },
     {
+      "source": "/",
+      "destination": "/index-safe.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/public/$1"
     }
