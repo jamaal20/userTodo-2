@@ -28,67 +28,116 @@ function setLoading(btnId, loading) {
   const btn = document.getElementById(btnId);
   btn.querySelector('.btn-text').classList.toggle('hidden', loading);
   btn.querySelector('.btn-spinner').classList.toggle('hidden', !loading);
-  btn.disabled = loading;
 }
 
-function showError(id, msg) {
-  document.getElementById(id).textContent = msg;
+function showError(elementId, message) {
+  document.getElementById(elementId).textContent = message;
 }
 
-async function authRequest(url, body) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Something went wrong');
-  return data;
+/* ---- API calls ---- */
+async function apiCall(endpoint, data) {
+  try {
+    const response = await fetch(`/api/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Request failed');
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
 }
 
-/* ---- Login ---- */
-async function handleLogin(e) {
-  e.preventDefault();
-  showError('login-error', '');
-  setLoading('login-btn', true);
-
+/* ---- Event handlers ---- */
+async function handleLogin(event) {
+  event.preventDefault();
+  
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
+  
+  if (!username || !password) {
+    showError('login-error', 'Please enter username and password');
+    return;
+  }
+
+  setLoading('login-btn', true);
+  showError('login-error', '');
 
   try {
-    const data = await authRequest('/api/auth/login', { username, password });
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('username', data.username);
+    const result = await apiCall('auth/login', { username, password });
+    
+    // Store token and redirect
+    localStorage.setItem('token', result.token);
+    localStorage.setItem('username', result.username);
     window.location.href = '/app.html';
-  } catch (err) {
-    showError('login-error', err.message);
+    
+  } catch (error) {
+    showError('login-error', error.message);
   } finally {
     setLoading('login-btn', false);
   }
 }
 
-/* ---- Register ---- */
-async function handleRegister(e) {
-  e.preventDefault();
-  showError('register-error', '');
-
+async function handleRegister(event) {
+  event.preventDefault();
+  
   const username = document.getElementById('reg-username').value.trim();
   const password = document.getElementById('reg-password').value;
-  const confirm  = document.getElementById('reg-confirm').value;
-
+  const confirm = document.getElementById('reg-confirm').value;
+  
+  if (!username || !password) {
+    showError('register-error', 'Please fill all fields');
+    return;
+  }
+  
+  if (password.length < 6) {
+    showError('register-error', 'Password must be at least 6 characters');
+    return;
+  }
+  
   if (password !== confirm) {
-    return showError('register-error', 'Passwords do not match');
+    showError('register-error', 'Passwords do not match');
+    return;
   }
 
   setLoading('register-btn', true);
+  showError('register-error', '');
+
   try {
-    const data = await authRequest('/api/auth/register', { username, password });
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('username', data.username);
+    const result = await apiCall('auth/register', { username, password });
+    
+    // Store token and redirect
+    localStorage.setItem('token', result.token);
+    localStorage.setItem('username', result.username);
     window.location.href = '/app.html';
-  } catch (err) {
-    showError('register-error', err.message);
+    
+  } catch (error) {
+    showError('register-error', error.message);
   } finally {
     setLoading('register-btn', false);
   }
 }
+
+/* ---- Initialize ---- */
+document.addEventListener('DOMContentLoaded', () => {
+  // Tab switching
+  document.querySelectorAll('[data-tab]').forEach(button => {
+    button.addEventListener('click', () => {
+      switchTab(button.dataset.tab);
+    });
+  });
+
+  // Form submissions
+  document.getElementById('form-login').addEventListener('submit', handleLogin);
+  document.getElementById('form-register').addEventListener('submit', handleRegister);
+});

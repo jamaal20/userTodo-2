@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UserTodo — Sign In</title>
   <meta name="description" content="Sign in or create an account to manage your tasks with UserTodo." />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.googleapis.com; connect-src 'self' https://*.vercel.app;">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/styles.css" />
@@ -25,12 +26,12 @@
 
     <!-- Tab switcher -->
     <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
-      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+      <button class="auth-tab active" id="tab-login" data-tab="login">Sign In</button>
+      <button class="auth-tab" id="tab-register" data-tab="register">Create Account</button>
     </div>
 
     <!-- Login Form -->
-    <form class="auth-form" id="form-login" onsubmit="handleLogin(event)">
+    <form class="auth-form" id="form-login">
       <div class="form-group">
         <label for="login-username">Username</label>
         <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" required />
@@ -47,7 +48,7 @@
     </form>
 
     <!-- Register Form -->
-    <form class="auth-form hidden" id="form-register" onsubmit="handleRegister(event)">
+    <form class="auth-form hidden" id="form-register">
       <div class="form-group">
         <label for="reg-username">Username</label>
         <input type="text" id="reg-username" placeholder="Choose a username" autocomplete="username" required />
