@@ -1,7 +1,37 @@
 const express = require('express');
 const router = express.Router();
-const { getTasksByUserId, createTask, updateTask, deleteTask } = require('../db-postgres');
 const auth = require('../middleware/auth');
+
+require('dotenv').config();
+
+// Determine which database to use
+const useVercelPostgres = process.env.POSTGRES_URL && process.env.POSTGRES_URL !== '';
+
+let getTasksByUserId, createTask, updateTask, deleteTask;
+if (useVercelPostgres) {
+  try {
+    const postgres = require('../db-postgres');
+    getTasksByUserId = postgres.getTasksByUserId;
+    createTask = postgres.createTask;
+    updateTask = postgres.updateTask;
+    deleteTask = postgres.deleteTask;
+    console.log('Using Vercel Postgres for tasks');
+  } catch (error) {
+    const local = require('../db-local');
+    getTasksByUserId = local.getTasksByUserId;
+    createTask = local.createTask;
+    updateTask = local.updateTask;
+    deleteTask = local.deleteTask;
+    console.log('Using local SQLite for tasks');
+  }
+} else {
+  const local = require('../db-local');
+  getTasksByUserId = local.getTasksByUserId;
+  createTask = local.createTask;
+  updateTask = local.updateTask;
+  deleteTask = local.deleteTask;
+  console.log('Using local SQLite for tasks');
+}
 
 // All routes require auth
 router.use(auth);

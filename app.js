@@ -2,13 +2,29 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { initDatabase } = require('./db-postgres');
+
+// Determine which database to use
+const useVercelPostgres = process.env.POSTGRES_URL && process.env.POSTGRES_URL !== '';
+
+let dbModule;
+if (useVercelPostgres) {
+  try {
+    dbModule = require('./db-postgres');
+    console.log('Using Vercel Postgres database');
+  } catch (error) {
+    console.log('Vercel Postgres failed, falling back to local SQLite');
+    dbModule = require('./db-local');
+  }
+} else {
+  console.log('Using local SQLite database (development mode)');
+  dbModule = require('./db-local');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Initialize database
-initDatabase();
+dbModule.initDatabase();
 
 // Middleware
 app.use(cors());

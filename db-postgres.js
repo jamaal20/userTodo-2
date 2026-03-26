@@ -3,6 +3,8 @@ const { sql } = require('@vercel/postgres');
 // Initialize database tables
 async function initDatabase() {
   try {
+    console.log('Initializing database...');
+    
     // Create users table
     await sql`
       CREATE TABLE IF NOT EXISTS users (
@@ -30,6 +32,7 @@ async function initDatabase() {
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Database initialization error:', error);
+    // Don't throw error, allow app to continue
   }
 }
 

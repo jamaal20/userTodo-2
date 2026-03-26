@@ -2,8 +2,31 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getUserByUsername, createUser } = require('../db-postgres');
+
 require('dotenv').config();
+
+// Determine which database to use
+const useVercelPostgres = process.env.POSTGRES_URL && process.env.POSTGRES_URL !== '';
+
+let getUserByUsername, createUser;
+if (useVercelPostgres) {
+  try {
+    const postgres = require('../db-postgres');
+    getUserByUsername = postgres.getUserByUsername;
+    createUser = postgres.createUser;
+    console.log('Using Vercel Postgres for auth');
+  } catch (error) {
+    const local = require('../db-local');
+    getUserByUsername = local.getUserByUsername;
+    createUser = local.createUser;
+    console.log('Using local SQLite for auth');
+  }
+} else {
+  const local = require('../db-local');
+  getUserByUsername = local.getUserByUsername;
+  createUser = local.createUser;
+  console.log('Using local SQLite for auth');
+}
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
