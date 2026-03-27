@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/simple-test.js"
+      "destination": "/api/production.js"
     },
     {
       "source": "/",
-      "destination": "/index-safe.html"
+      "destination": "/index.html"
     },
     {
       "source": "/app",
-      "destination": "/app-safe.html"
+      "destination": "/app.html"
     },
     {
       "source": "/app.html",
-      "destination": "/app-safe.html"
+      "destination": "/app.html"
     },
     {
       "source": "/(.*)",
