@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/hybrid.js"
+      "source": "/api/auth/(.*)",
+      "destination": "/api/auth.js"
+    },
+    {
+      "source": "/api/tasks/(.*)",
+      "destination": "/api/tasks.js"
     },
     {
       "source": "/",
