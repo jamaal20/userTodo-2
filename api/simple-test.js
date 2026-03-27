@@ -32,6 +32,27 @@ app.post('/api/auth/login', (req, res) => {
   });
 });
 
+// Add missing register endpoint
+app.post('/api/auth/register', (req, res) => {
+  console.log('Register request received:', req.body);
+  
+  const { username, password } = req.body;
+  
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password required' });
+  }
+  
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  
+  // Always succeed for testing
+  res.status(201).json({
+    token: 'test-token-' + Date.now(),
+    username: username
+  });
+});
+
 // Simple tasks test
 app.get('/api/tasks', (req, res) => {
   res.json([
