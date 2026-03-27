@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/production.js"
+      "destination": "/api/hybrid.js"
     },
     {
       "source": "/",
