@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
     const result = await db.sql`
       INSERT INTO tasks (user_id, title, description, priority, due_date)
       VALUES (${req.user.id}, ${title.trim()}, ${description.trim()}, ${priority}, ${due_date})
+      RETURNING *
     `;
     
     // INSERT returns the new record

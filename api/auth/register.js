@@ -32,6 +32,7 @@ module.exports = async (req, res) => {
     const result = await db.sql`
       INSERT INTO users (username, password_hash) 
       VALUES (${username}, ${passwordHash})
+      RETURNING *
     `;
     
     // In our db.sql wrapper, INSERT returns the new record
