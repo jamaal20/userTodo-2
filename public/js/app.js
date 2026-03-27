@@ -35,7 +35,14 @@ async function api(method, endpoint, body) {
     }
   };
   if (body) opts.body = JSON.stringify(body);
-  const res = await fetch('/api' + endpoint, opts);
+  
+  // Update endpoints to match new structure
+  let url = '/api' + endpoint;
+  if (method === 'POST' && endpoint === '/tasks') {
+    url = '/api/tasks/create';
+  }
+  
+  const res = await fetch(url, opts);
   if (res.status === 401) { logout(); return; }
   return res.json();
 }
@@ -177,7 +184,7 @@ async function deleteTask(id) {
     card.style.transform = 'scale(0.95)';
     await new Promise(r => setTimeout(r, 200));
   }
-  await api('DELETE', `/tasks/${id}`);
+  await api('DELETE', `/tasks/delete?id=${id}`);
   tasks = tasks.filter(t => t.id !== id);
   renderTasks();
   updateStats();

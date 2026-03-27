@@ -37,7 +37,7 @@ function showError(elementId, message) {
 /* ---- API calls ---- */
 async function apiCall(endpoint, data) {
   try {
-    const response = await fetch(`/api/${endpoint}`, {
+    const response = await fetch(`/api/auth/${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,24 +1,20 @@
 {
   "rewrites": [
     {
-      "source": "/api/auth/(.*)",
-      "destination": "/api/auth.js"
+      "source": "/api/auth/register",
+      "destination": "/api/auth/register.js"
     },
     {
-      "source": "/api/tasks/(.*)",
-      "destination": "/api/tasks.js"
+      "source": "/api/auth/login",
+      "destination": "/api/auth/login.js"
     },
     {
-      "source": "/",
-      "destination": "/index.html"
+      "source": "/api/tasks",
+      "destination": "/api/tasks/index.js"
     },
     {
-      "source": "/app",
-      "destination": "/app.html"
-    },
-    {
-      "source": "/app.html",
-      "destination": "/app.html"
+      "source": "/api/tasks/create",
+      "destination": "/api/tasks/create.js"
     },
     {
       "source": "/(.*)",
