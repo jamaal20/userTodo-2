@@ -1,53 +1,19 @@
-// Register endpoint
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
-let sql;
-try {
-  sql = require('@vercel/postgres');
-} catch (error) {
-  console.log('Vercel Postgres not available, using fallback');
-}
-
-// Fallback storage
-let fallbackUsers = [];
-let userIdCounter = 1;
-
-// Initialize database
-async function initDatabase() {
-  if (!sql) return;
-  
-  try {
-    await sql`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(255) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-  } catch (error) {
-    console.error('Database initialization error, using fallback:', error.message);
-  }
-}
+const db = require('../../lib/db');
 
 module.exports = async (req, res) => {
-  // Set CORS headers
+  // CORS (handled by app.js in local dev, but for Vercel)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  console.log('Register request received for:', req.body.username);
   try {
     const { username, password } = req.body;
-    
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password required' });
     }
@@ -56,45 +22,20 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    let user;
-
-    if (sql) {
-      try {
-        const existingUsers = await sql`SELECT id FROM users WHERE username = ${username}`;
-        if (existingUsers.length > 0) {
-          return res.status(409).json({ error: 'Username already taken' });
-        }
-
-        const passwordHash = bcrypt.hashSync(password, 10);
-        const result = await sql`
-          INSERT INTO users (username, password_hash) 
-          VALUES (${username}, ${passwordHash}) 
-          RETURNING id, username, created_at
-        `;
-        user = result[0];
-      } catch (dbError) {
-        console.log('Database error, falling back:', dbError.message);
-        sql = null;
-      }
+    // Check if user exists
+    const existingUsers = await db.sql`SELECT id FROM users WHERE username = ${username}`;
+    if (existingUsers.length > 0) {
+      return res.status(409).json({ error: 'Username already taken' });
     }
 
-    if (!sql) {
-      const existingUser = fallbackUsers.find(u => u.username === username);
-      if (existingUser) {
-        return res.status(409).json({ error: 'Username already taken' });
-      }
-
-      user = {
-        id: userIdCounter++,
-        username: username,
-        created_at: new Date().toISOString()
-      };
-
-      fallbackUsers.push({
-        ...user,
-        password_hash: bcrypt.hashSync(password, 10)
-      });
-    }
+    const passwordHash = bcrypt.hashSync(password, 10);
+    const result = await db.sql`
+      INSERT INTO users (username, password_hash) 
+      VALUES (${username}, ${passwordHash})
+    `;
+    
+    // In our db.sql wrapper, INSERT returns the new record
+    const user = result[0];
 
     const token = jwt.sign(
       { id: user.id, username: user.username },
@@ -111,6 +52,3 @@ module.exports = async (req, res) => {
     res.status(500).json({ error: 'Registration failed' });
   }
 };
-
-// Initialize database
-initDatabase();

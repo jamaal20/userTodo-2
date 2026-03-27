@@ -1,63 +1,42 @@
-// Get tasks endpoint
-const jwt = require('jsonwebtoken');
-
-let sql;
-try {
-  sql = require('@vercel/postgres');
-} catch (error) {
-  console.log('Vercel Postgres not available, using fallback');
-}
-
-// Fallback storage
-let fallbackTasks = [];
+const db = require('../../lib/db');
+const auth = require('../../middleware/auth');
 
 module.exports = async (req, res) => {
-  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   // Authentication
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-  
-  const token = authHeader.substring(7);
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-    req.user = decoded;
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
+  // We call our middleware manually to keep the function compatible with Vercel's standalone execution
+  let authenticated = false;
+  await auth(req, res, () => { authenticated = true; });
+  if (!authenticated) return; // auth middleware already sent 401 response
 
   try {
     if (req.method === 'GET') {
-      let tasks;
-
-      if (sql) {
-        try {
-          tasks = await sql`
-            SELECT * FROM tasks 
-            WHERE user_id = ${req.user.id} 
-            ORDER BY created_at DESC
-          `;
-        } catch (dbError) {
-          console.log('Database error, falling back:', dbError.message);
-          sql = null;
-        }
-      }
-
-      if (!sql) {
-        tasks = fallbackTasks.filter(task => task.user_id === req.user.id);
-      }
-
+      const tasks = await db.sql`
+        SELECT * FROM tasks 
+        WHERE user_id = ${req.user.id} 
+        ORDER BY created_at DESC
+      `;
       return res.json(tasks);
+    }
+
+    if (req.method === 'PUT') {
+        const id = req.query.id || req.body.id || (req.url.split('/').pop());
+        const { title, description, priority, completed, due_date } = req.body;
+        
+        await db.sql`
+          UPDATE tasks 
+          SET title = ${title}, description = ${description}, priority = ${priority}, 
+              completed = ${completed ? 1 : 0}, due_date = ${due_date}
+          WHERE id = ${id} AND user_id = ${req.user.id}
+        `;
+        
+        const updated = await db.sql`SELECT * FROM tasks WHERE id = ${id}`;
+        return res.json(updated[0]);
     }
 
     res.status(405).json({ error: 'Method not allowed' });

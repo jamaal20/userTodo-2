@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "node app.js"
+    "dev": "node app.js",
+    "vercel-dev": "vercel dev"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",

@@ -184,7 +184,7 @@ async function deleteTask(id) {
     card.style.transform = 'scale(0.95)';
     await new Promise(r => setTimeout(r, 200));
   }
-  await api('DELETE', `/tasks/delete?id=${id}`);
+  await api('DELETE', `/tasks/delete/${id}`);
   tasks = tasks.filter(t => t.id !== id);
   renderTasks();
   updateStats();
