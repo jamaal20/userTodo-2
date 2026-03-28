@@ -2,11 +2,6 @@
 //  auth.js — Login & Register logic
 // =============================================
 
-// Redirect to app if already logged in
-if (localStorage.getItem('token')) {
-  window.location.href = '/app.html';
-}
-
 /* ---- Tab switching ---- */
 function switchTab(tab) {
   const tabs   = ['login', 'register'];
